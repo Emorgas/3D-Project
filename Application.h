@@ -8,14 +8,10 @@
 #include "resource.h"
 #include "CameraManager.h"
 #include "Input.h"
+#include "Structures.h"
+#include "GameObject.h"
 
 using namespace DirectX;
-
-struct SimpleVertex
-{
-    XMFLOAT3 Pos;
-    XMFLOAT4 Color;
-};
 
 struct ConstantBuffer
 {
@@ -46,6 +42,7 @@ private:
 	XMFLOAT4X4              _projection;
 	CameraManager*			_camManager;
 	Input*					_input;
+	std::vector<GameObject*> _objects;
 
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);

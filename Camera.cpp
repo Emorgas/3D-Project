@@ -10,7 +10,6 @@ Camera::Camera(XMVECTOR eye, XMVECTOR at, XMVECTOR up, FLOAT windowWidth, FLOAT 
 	_farDepth(farDepth)
 {
 	_zoom = XM_PIDIV2;
-	_rotation = 0.0f;
 }
 
 Camera::~Camera()

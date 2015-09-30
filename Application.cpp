@@ -84,6 +84,18 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 
 	_input = new Input();
 	_input->Initialise(_hInst, _hWnd);
+
+	_objects.emplace_back(new GameObject());
+	_objects.at(0)->Initialise(_pd3dDevice);
+	_objects.at(0)->SetTranslation(0.0f, 0.0f, 0.0f);
+
+	_objects.emplace_back(new GameObject());
+	_objects.at(1)->Initialise(_pd3dDevice);
+	_objects.at(1)->SetTranslation(2.0f, 2.0f, 2.0f);
+
+	_objects.emplace_back(new GameObject());
+	_objects.at(2)->Initialise(_pd3dDevice);
+	_objects.at(2)->SetTranslation(-2.0f, -2.0f, 0.1f);
 	return S_OK;
 }
 
@@ -362,17 +374,17 @@ HRESULT Application::InitDevice()
 
 	InitShadersAndInputLayout();
 
-	InitVertexBuffer();
+	//InitVertexBuffer();
 
     // Set vertex buffer
-    UINT stride = sizeof(SimpleVertex);
-    UINT offset = 0;
-    _pImmediateContext->IASetVertexBuffers(0, 1, &_pVertexBuffer, &stride, &offset);
+   // UINT stride = sizeof(SimpleVertex);
+    //UINT offset = 0;
+    //_pImmediateContext->IASetVertexBuffers(0, 1, &_pVertexBuffer, &stride, &offset);
 
-	InitIndexBuffer();
+	//InitIndexBuffer();
 
     // Set index buffer
-    _pImmediateContext->IASetIndexBuffer(_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+    ///_pImmediateContext->IASetIndexBuffer(_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
     // Set primitive topology
     _pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -432,6 +444,11 @@ void Application::Update()
         t = (dwTimeCur - dwTimeStart) / 1000.0f;
     }
 
+	for (int i = 0; i < _objects.size(); i++)
+	{
+		_objects.at(i)->UpdateWorld();
+	}
+
     //
     // Animate the cube
     //
@@ -472,18 +489,6 @@ void Application::HandleInput()
 	{
 		_camManager->GetActiveCamera()->AddAt(0.001f, 0.0f, 0.0f);
 	}
-	
-	//Camera Rotation
-	if (_input->IsQPressed())
-	{
-		_camManager->GetActiveCamera()->AddRotation(-0.001f);
-		XMStoreFloat4x4(&_world, XMMatrixRotationZ(_camManager->GetActiveCamera()->GetRotation()));
-	}
-	if (_input->IsEPressed())
-	{
-		_camManager->GetActiveCamera()->AddRotation(0.001f);
-		XMStoreFloat4x4(&_world, XMMatrixRotationZ(_camManager->GetActiveCamera()->GetRotation()));
-	}
 }
 
 void Application::Draw()
@@ -497,23 +502,27 @@ void Application::Draw()
 	XMMATRIX world = XMLoadFloat4x4(&_world);
 	XMMATRIX view = XMLoadFloat4x4(&_camManager->GetActiveCamera()->GetView());
 	XMMATRIX projection = XMLoadFloat4x4(&_camManager->GetActiveCamera()->GetProjection());
-    //
-    // Update variables
-    //
-    ConstantBuffer cb;
-	cb.mWorld = XMMatrixTranspose(world);
-	cb.mView = XMMatrixTranspose(view);
-	cb.mProjection = XMMatrixTranspose(projection);
 
-	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 
-    //
-    // Renders a triangle
-    //
-	_pImmediateContext->VSSetShader(_pVertexShader, nullptr, 0);
-	_pImmediateContext->VSSetConstantBuffers(0, 1, &_pConstantBuffer);
-	_pImmediateContext->PSSetShader(_pPixelShader, nullptr, 0);
-	_pImmediateContext->DrawIndexed(6, 0, 0);        
+	for (int i = 0; i < _objects.size(); i++)
+	{
+		world = XMLoadFloat4x4(&_objects.at(0)->GetWorld());
+		XMMATRIX world2 = XMLoadFloat4x4(&_objects.at(i)->GetWorld());
+		world *= world2;
+
+		ConstantBuffer cb;
+		cb.mWorld = XMMatrixTranspose(world);
+		cb.mView = XMMatrixTranspose(view);
+		cb.mProjection = XMMatrixTranspose(projection);
+		_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
+
+		_pImmediateContext->VSSetShader(_pVertexShader, nullptr, 0);
+		_pImmediateContext->VSSetConstantBuffers(0, 1, &_pConstantBuffer);
+		_pImmediateContext->PSSetShader(_pPixelShader, nullptr, 0);
+		_objects.at(i)->Draw(_pd3dDevice, _pImmediateContext);
+	}
+
+       
 
     //
     // Present our back buffer to our front buffer

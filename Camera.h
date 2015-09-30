@@ -23,7 +23,6 @@ private:
 	const FLOAT _ZOOMMAX = 2.75f;
 	const FLOAT _ZOOMMIN = 0.39f;
 	const FLOAT _ZOOMDEFAULT = XM_PIDIV2;
-	float _rotation;
 
 	XMFLOAT4X4 _view;
 	XMFLOAT4X4 _projection;
@@ -53,8 +52,6 @@ public:
 	void AddAt(float x, float y, float z);
 	void AddZoom(float zoom);
 	void ResetZoom();
-	void AddRotation(float rotation) { _rotation += rotation; }
-	float GetRotation() const { return _rotation; }
 
 	void Reshape(FLOAT windowWidth, FLOAT windowHeight, FLOAT nearDepth, FLOAT farDepth);
 };
