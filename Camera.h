@@ -11,9 +11,9 @@ using namespace DirectX;
 class Camera
 {
 private:
-	XMFLOAT4 _eye;
-	XMFLOAT4 _at;
-	XMFLOAT4 _up;
+	XMVECTOR _eye;
+	XMVECTOR _at;
+	XMVECTOR _up;
 
 	FLOAT _windowWidth;
 	FLOAT _windowHeight;
@@ -24,7 +24,7 @@ private:
 	XMFLOAT4X4 _projection;
 
 public:
-	Camera(XMFLOAT4 eye, XMFLOAT4 at, XMFLOAT4 up, FLOAT windowWidth, FLOAT windowHeight, FLOAT nearDepth, FLOAT farDepth);
+	Camera(XMVECTOR eye, XMVECTOR at, XMVECTOR up, FLOAT windowWidth, FLOAT windowHeight, FLOAT nearDepth, FLOAT farDepth);
 	~Camera();
 
 	void CalculateViewProjection();
@@ -34,17 +34,17 @@ public:
 
 	XMFLOAT4X4 GetViewProjection() const;
 
-	XMFLOAT4 GetEye() const { return _eye; }
-	XMFLOAT4 GetAt() const { return _at; }
-	XMFLOAT4 GetUp() const { return _up; }
+	XMVECTOR GetEye() const { return _eye; }
+	XMVECTOR GetAt() const { return _at; }
+	XMVECTOR GetUp() const { return _up; }
 
 
 	void rotateView(float angle);
-	void SetEye(XMFLOAT4 eye) { _eye = eye; }
+	void SetEye(XMVECTOR eye) { _eye = eye; }
 	void SetEye(float x, float y, float z);
-	void SetAt(XMFLOAT4 at) { _at = at; }
+	void SetAt(XMVECTOR at) { _at = at; }
 	void SetAt(float x, float y, float z);
-	void SetUp(XMFLOAT4 up) { _up = up; }
+	void SetUp(XMVECTOR up) { _up = up; }
 
 	void Reshape(FLOAT windowWidth, FLOAT windowHeight, FLOAT nearDepth, FLOAT farDepth);
 };

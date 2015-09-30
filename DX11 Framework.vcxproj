@@ -376,6 +376,7 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CameraManager.cpp" />
     <ClCompile Include="DX11 Framework.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -384,6 +385,7 @@
   <ItemGroup>
     <ClInclude Include="Application.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="CameraManager.h" />
     <CLInclude Include="resource.h" />
     <ResourceCompile Include="DX11 Framework.rc" />
   </ItemGroup>

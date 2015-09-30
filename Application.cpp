@@ -40,6 +40,7 @@ Application::Application()
 	_pVertexBuffer = nullptr;
 	_pIndexBuffer = nullptr;
 	_pConstantBuffer = nullptr;
+	_camManager = nullptr;
 }
 
 Application::~Application()
@@ -66,6 +67,8 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
         return E_FAIL;
     }
 
+	_camManager = new CameraManager();
+
 	// Initialize the world matrix
 	XMStoreFloat4x4(&_world, XMMatrixIdentity());
 
@@ -74,11 +77,9 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
-	XMStoreFloat4x4(&_view, XMMatrixLookAtLH(Eye, At, Up));
+	_camManager->AddCamera(new Camera(Eye, At, Up, (FLOAT)_WindowWidth, (FLOAT)_WindowHeight, 0.01f, 100.0f));
 
-    // Initialize the projection matrix
-	XMStoreFloat4x4(&_projection, XMMatrixPerspectiveFovLH(XM_PIDIV2, _WindowWidth / (FLOAT) _WindowHeight, 0.01f, 100.0f));
-
+	_camManager->Init();
 	return S_OK;
 }
 
@@ -405,6 +406,7 @@ void Application::Cleanup()
 
 void Application::Update()
 {
+	_camManager->GetActiveCamera()->CalculateViewProjection();
     // Update our time
     static float t = 0.0f;
 
@@ -439,8 +441,8 @@ void Application::Draw()
     _pImmediateContext->ClearRenderTargetView(_pRenderTargetView, ClearColor);
 
 	XMMATRIX world = XMLoadFloat4x4(&_world);
-	XMMATRIX view = XMLoadFloat4x4(&_view);
-	XMMATRIX projection = XMLoadFloat4x4(&_projection);
+	XMMATRIX view = XMLoadFloat4x4(&_camManager->GetActiveCamera()->GetView());
+	XMMATRIX projection = XMLoadFloat4x4(&_camManager->GetActiveCamera()->GetProjection());
     //
     // Update variables
     //

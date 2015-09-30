@@ -6,6 +6,7 @@
 #include <directxmath.h>
 #include <directxcolors.h>
 #include "resource.h"
+#include "CameraManager.h"
 
 using namespace DirectX;
 
@@ -42,6 +43,7 @@ private:
 	XMFLOAT4X4              _world;
 	XMFLOAT4X4              _view;
 	XMFLOAT4X4              _projection;
+	CameraManager*			_camManager;
 
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);

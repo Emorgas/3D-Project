@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-Camera::Camera(XMFLOAT4 eye, XMFLOAT4 at, XMFLOAT4 up, FLOAT windowWidth, FLOAT windowHeight, FLOAT nearDepth, FLOAT farDepth)
+Camera::Camera(XMVECTOR eye, XMVECTOR at, XMVECTOR up, FLOAT windowWidth, FLOAT windowHeight, FLOAT nearDepth, FLOAT farDepth)
 	: _eye(eye), _at(at), _up(up), _windowWidth(windowWidth), _windowHeight(windowHeight), _nearDepth(nearDepth), _farDepth(farDepth)
 {
 }
@@ -12,9 +12,9 @@ Camera::~Camera()
 void Camera::CalculateViewProjection()
 {
 	// Initialize the view matrix
-	XMVECTOR Eye = XMLoadFloat4(&_eye);
-	XMVECTOR At = XMLoadFloat4(&_at);
-	XMVECTOR Up = XMLoadFloat4(&_up);
+	XMVECTOR Eye = _eye;
+	XMVECTOR At = _at;
+	XMVECTOR Up = _up;
 
 	XMStoreFloat4x4(&_view, XMMatrixLookAtLH(Eye, At, Up));
 
@@ -44,12 +44,12 @@ XMFLOAT4X4 Camera::GetViewProjection() const
 
 void Camera::SetEye(float x, float y, float z)
 {
-	XMFLOAT4 eye(x, y, z, 0.0f);
+	XMVECTOR eye = XMVectorSet(x, y, z, 0.0f);
 	_eye = eye;
 }
 
 void Camera::SetAt(float x, float y, float z)
 {
-	XMFLOAT4 at(x, y, z, 0.0f);
+	XMVECTOR at = XMVectorSet(x, y, z, 0.0f);
 	_at = at;
 }
