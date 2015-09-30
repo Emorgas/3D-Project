@@ -378,6 +378,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraManager.cpp" />
     <ClCompile Include="DX11 Framework.cpp" />
+    <ClCompile Include="Input.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DX11 Framework.fx" />
@@ -386,6 +387,7 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraManager.h" />
+    <ClInclude Include="Input.h" />
     <CLInclude Include="resource.h" />
     <ResourceCompile Include="DX11 Framework.rc" />
   </ItemGroup>

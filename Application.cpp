@@ -41,6 +41,7 @@ Application::Application()
 	_pIndexBuffer = nullptr;
 	_pConstantBuffer = nullptr;
 	_camManager = nullptr;
+	_input = nullptr;
 }
 
 Application::~Application()
@@ -80,6 +81,9 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	_camManager->AddCamera(new Camera(Eye, At, Up, (FLOAT)_WindowWidth, (FLOAT)_WindowHeight, 0.01f, 100.0f));
 
 	_camManager->Init();
+
+	_input = new Input();
+	_input->Initialise(_hInst, _hWnd);
 	return S_OK;
 }
 
@@ -410,6 +414,9 @@ void Application::Update()
     // Update our time
     static float t = 0.0f;
 
+	_input->Update();
+	HandleInput();
+
     if (_driverType == D3D_DRIVER_TYPE_REFERENCE)
     {
         t += (float) XM_PI * 0.0125f;
@@ -430,6 +437,53 @@ void Application::Update()
     //
 	
 	//XMStoreFloat4x4(&_world, XMMatrixMultiply(XMMatrixRotationX(t * 0.5f), XMMatrixRotationZ(t)));
+}
+
+void Application::HandleInput()
+{
+	//Zooming Z == Positive Zoom; C == Negative Zoom; X == Reset Zoom;
+	if (_input->IsZPressed())
+	{
+		_camManager->GetActiveCamera()->AddZoom(-0.01f);
+	}
+	if (_input->IsCPressed())
+	{
+		_camManager->GetActiveCamera()->AddZoom(0.01f);
+	}
+	if (_input->IsXPressed())
+	{
+		_camManager->GetActiveCamera()->ResetZoom();
+	}
+
+	//Camera Look Movement
+	if (_input->IsWPressed())
+	{
+		_camManager->GetActiveCamera()->AddAt(0.0f, 0.001f, 0.0f);
+	}
+	if (_input->IsAPressed())
+	{
+		_camManager->GetActiveCamera()->AddAt(-0.001f, 0.0f, 0.0f);
+	}
+	if (_input->IsSPressed())
+	{
+		_camManager->GetActiveCamera()->AddAt(0.0f, -0.001f, 0.0f);
+	}
+	if (_input->IsDPressed())
+	{
+		_camManager->GetActiveCamera()->AddAt(0.001f, 0.0f, 0.0f);
+	}
+	
+	//Camera Rotation
+	if (_input->IsQPressed())
+	{
+		_camManager->GetActiveCamera()->AddRotation(-0.001f);
+		XMStoreFloat4x4(&_world, XMMatrixRotationZ(_camManager->GetActiveCamera()->GetRotation()));
+	}
+	if (_input->IsEPressed())
+	{
+		_camManager->GetActiveCamera()->AddRotation(0.001f);
+		XMStoreFloat4x4(&_world, XMMatrixRotationZ(_camManager->GetActiveCamera()->GetRotation()));
+	}
 }
 
 void Application::Draw()

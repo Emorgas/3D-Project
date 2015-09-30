@@ -7,6 +7,7 @@
 #include <directxcolors.h>
 #include "resource.h"
 #include "CameraManager.h"
+#include "Input.h"
 
 using namespace DirectX;
 
@@ -44,6 +45,7 @@ private:
 	XMFLOAT4X4              _view;
 	XMFLOAT4X4              _projection;
 	CameraManager*			_camManager;
+	Input*					_input;
 
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
@@ -53,6 +55,7 @@ private:
 	HRESULT InitShadersAndInputLayout();
 	HRESULT InitVertexBuffer();
 	HRESULT InitIndexBuffer();
+	void HandleInput();
 
 	UINT _WindowHeight;
 	UINT _WindowWidth;

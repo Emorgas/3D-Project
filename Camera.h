@@ -19,6 +19,11 @@ private:
 	FLOAT _windowHeight;
 	FLOAT _nearDepth;
 	FLOAT _farDepth;
+	FLOAT _zoom;
+	const FLOAT _ZOOMMAX = 2.75f;
+	const FLOAT _ZOOMMIN = 0.39f;
+	const FLOAT _ZOOMDEFAULT = XM_PIDIV2;
+	float _rotation;
 
 	XMFLOAT4X4 _view;
 	XMFLOAT4X4 _projection;
@@ -39,12 +44,17 @@ public:
 	XMVECTOR GetUp() const { return _up; }
 
 
-	void rotateView(float angle);
 	void SetEye(XMVECTOR eye) { _eye = eye; }
 	void SetEye(float x, float y, float z);
+	void AddEye(float x, float y, float z);
 	void SetAt(XMVECTOR at) { _at = at; }
 	void SetAt(float x, float y, float z);
 	void SetUp(XMVECTOR up) { _up = up; }
+	void AddAt(float x, float y, float z);
+	void AddZoom(float zoom);
+	void ResetZoom();
+	void AddRotation(float rotation) { _rotation += rotation; }
+	float GetRotation() const { return _rotation; }
 
 	void Reshape(FLOAT windowWidth, FLOAT windowHeight, FLOAT nearDepth, FLOAT farDepth);
 };
