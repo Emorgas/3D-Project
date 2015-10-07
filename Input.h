@@ -15,7 +15,7 @@ private:
 	IDirectInputDevice8* m_mouse;
 
 	unsigned char m_keyboardState[256];
-	DIMOUSESTATE m_mouseState;
+	DIMOUSESTATE m_mouseLastState;
 
 	bool ReadKeyboard();
 	bool ReadMouse();
@@ -40,9 +40,11 @@ public:
 	bool IsAPressed();
 	bool IsSPressed();
 	bool IsDPressed();
-	//Rotate Camera
+
 	bool IsQPressed();
 	bool IsEPressed();
+
+	bool HasMouseMoved();
 
 	bool Update();
 

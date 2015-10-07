@@ -53,8 +53,7 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 {
     if (FAILED(InitWindow(hInstance, nCmdShow)))
 	{
-        return E_FAIL;
-	}
+        return E_FAIL;	}
 
     RECT rc;
     GetClientRect(_hWnd, &rc);
@@ -91,11 +90,12 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 
 	_objects.emplace_back(new GameObject());
 	_objects.at(1)->Initialise(_pd3dDevice);
-	_objects.at(1)->SetTranslation(2.0f, 2.0f, 2.0f);
+	_objects.at(1)->SetTranslation(-2.0f, -2.0f, 0.1f);
 
-	_objects.emplace_back(new GameObject());
-	_objects.at(2)->Initialise(_pd3dDevice);
-	_objects.at(2)->SetTranslation(-2.0f, -2.0f, 0.1f);
+	_lightDirection = XMFLOAT3(0.0f, 1.0f, 0.0f);
+	_diffuseMaterial = XMFLOAT4(0.8f, 0.5f, 0.5f, 1.0f);
+	_diffuseLight = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+
 	return S_OK;
 }
 
@@ -146,7 +146,7 @@ HRESULT Application::InitShadersAndInputLayout()
     D3D11_INPUT_ELEMENT_DESC layout[] =
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	UINT numElements = ARRAYSIZE(layout);
@@ -163,68 +163,6 @@ HRESULT Application::InitShadersAndInputLayout()
     _pImmediateContext->IASetInputLayout(_pVertexLayout);
 
 	return hr;
-}
-
-HRESULT Application::InitVertexBuffer()
-{
-	HRESULT hr;
-
-    // Create vertex buffer
-    SimpleVertex vertices[] =
-    {
-        { XMFLOAT3( -1.0f, 1.0f, 0.0f ), XMFLOAT4( 0.0f, 0.0f, 1.0f, 1.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, 0.0f ), XMFLOAT4( 0.0f, 1.0f, 0.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, -1.0f, 0.0f ), XMFLOAT4( 0.0f, 1.0f, 1.0f, 1.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, 0.0f ), XMFLOAT4( 1.0f, 0.0f, 0.0f, 1.0f ) },
-    };
-
-    D3D11_BUFFER_DESC bd;
-	ZeroMemory(&bd, sizeof(bd));
-    bd.Usage = D3D11_USAGE_DEFAULT;
-    bd.ByteWidth = sizeof(SimpleVertex) * 4;
-    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-
-    D3D11_SUBRESOURCE_DATA InitData;
-	ZeroMemory(&InitData, sizeof(InitData));
-    InitData.pSysMem = vertices;
-
-    hr = _pd3dDevice->CreateBuffer(&bd, &InitData, &_pVertexBuffer);
-
-    if (FAILED(hr))
-        return hr;
-
-	return S_OK;
-}
-
-HRESULT Application::InitIndexBuffer()
-{
-	HRESULT hr;
-
-    // Create index buffer
-    WORD indices[] =
-    {
-        0,1,2,
-        2,1,3,
-    };
-
-	D3D11_BUFFER_DESC bd;
-	ZeroMemory(&bd, sizeof(bd));
-
-    bd.Usage = D3D11_USAGE_DEFAULT;
-    bd.ByteWidth = sizeof(WORD) * 6;     
-    bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA InitData;
-	ZeroMemory(&InitData, sizeof(InitData));
-    InitData.pSysMem = indices;
-    hr = _pd3dDevice->CreateBuffer(&bd, &InitData, &_pIndexBuffer);
-
-    if (FAILED(hr))
-        return hr;
-
-	return S_OK;
 }
 
 HRESULT Application::InitWindow(HINSTANCE hInstance, int nCmdShow)
@@ -359,8 +297,25 @@ HRESULT Application::InitDevice()
 
     if (FAILED(hr))
         return hr;
+	//Create Depth/Stencil Buffer
+	D3D11_TEXTURE2D_DESC depthStencilDesc;
 
-    _pImmediateContext->OMSetRenderTargets(1, &_pRenderTargetView, nullptr);
+	depthStencilDesc.Width = _WindowWidth;
+	depthStencilDesc.Height = _WindowHeight;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilDesc.SampleDesc.Count = 1;
+	depthStencilDesc.SampleDesc.Quality = 0;
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.CPUAccessFlags = 0;
+	depthStencilDesc.MiscFlags = 0;
+
+	_pd3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, &_depthStencilBuffer);
+	_pd3dDevice->CreateDepthStencilView(_depthStencilBuffer, nullptr, &_depthStencilView);
+
+    _pImmediateContext->OMSetRenderTargets(1, &_pRenderTargetView, _depthStencilView);
 
     // Setup the viewport
     D3D11_VIEWPORT vp;
@@ -374,18 +329,6 @@ HRESULT Application::InitDevice()
 
 	InitShadersAndInputLayout();
 
-	//InitVertexBuffer();
-
-    // Set vertex buffer
-   // UINT stride = sizeof(SimpleVertex);
-    //UINT offset = 0;
-    //_pImmediateContext->IASetVertexBuffers(0, 1, &_pVertexBuffer, &stride, &offset);
-
-	//InitIndexBuffer();
-
-    // Set index buffer
-    ///_pImmediateContext->IASetIndexBuffer(_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
-
     // Set primitive topology
     _pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -397,6 +340,20 @@ HRESULT Application::InitDevice()
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = 0;
     hr = _pd3dDevice->CreateBuffer(&bd, nullptr, &_pConstantBuffer);
+
+	//Create Wireframe State
+	D3D11_RASTERIZER_DESC wfdesc;
+	ZeroMemory(&wfdesc, sizeof(D3D11_RASTERIZER_DESC));
+	wfdesc.FillMode = D3D11_FILL_WIREFRAME;
+	wfdesc.CullMode = D3D11_CULL_NONE;
+	hr = _pd3dDevice->CreateRasterizerState(&wfdesc, &_wireFrame);
+
+	//Create solid State
+	D3D11_RASTERIZER_DESC solidDesc;
+	ZeroMemory(&solidDesc, sizeof(D3D11_RASTERIZER_DESC));
+	solidDesc.FillMode = D3D11_FILL_SOLID;
+	solidDesc.CullMode = D3D11_CULL_BACK;
+	hr = _pd3dDevice->CreateRasterizerState(&solidDesc, &_solid);
 
     if (FAILED(hr))
         return hr;
@@ -418,6 +375,10 @@ void Application::Cleanup()
     if (_pSwapChain) _pSwapChain->Release();
     if (_pImmediateContext) _pImmediateContext->Release();
     if (_pd3dDevice) _pd3dDevice->Release();
+	if (_depthStencilView) _depthStencilView->Release();
+	if (_depthStencilBuffer) _depthStencilBuffer->Release();
+	if (_wireFrame) _wireFrame->Release();
+	if (_solid) _solid->Release();
 }
 
 void Application::Update()
@@ -448,12 +409,6 @@ void Application::Update()
 	{
 		_objects.at(i)->UpdateWorld();
 	}
-
-    //
-    // Animate the cube
-    //
-	
-	//XMStoreFloat4x4(&_world, XMMatrixMultiply(XMMatrixRotationX(t * 0.5f), XMMatrixRotationZ(t)));
 }
 
 void Application::HandleInput()
@@ -475,19 +430,27 @@ void Application::HandleInput()
 	//Camera Look Movement
 	if (_input->IsWPressed())
 	{
-		_camManager->GetActiveCamera()->AddAt(0.0f, 0.001f, 0.0f);
+		_camManager->GetActiveCamera()->AddEye(0.0f, 0.001f, 0.0f);
 	}
 	if (_input->IsAPressed())
 	{
-		_camManager->GetActiveCamera()->AddAt(-0.001f, 0.0f, 0.0f);
+		_camManager->GetActiveCamera()->AddEye(-0.001f, 0.0f, 0.0f);
 	}
 	if (_input->IsSPressed())
 	{
-		_camManager->GetActiveCamera()->AddAt(0.0f, -0.001f, 0.0f);
+		_camManager->GetActiveCamera()->AddEye(0.0f, -0.001f, 0.0f);
 	}
 	if (_input->IsDPressed())
 	{
-		_camManager->GetActiveCamera()->AddAt(0.001f, 0.0f, 0.0f);
+		_camManager->GetActiveCamera()->AddEye(0.001f, 0.0f, 0.0f);
+	}
+	if (_input->IsQPressed())
+	{
+		_pImmediateContext->RSSetState(_wireFrame);
+	}
+	if (_input->IsEPressed())
+	{
+		_pImmediateContext->RSSetState(_solid);
 	}
 }
 
@@ -498,7 +461,7 @@ void Application::Draw()
     //
     float ClearColor[4] = {0.0f, 0.125f, 0.3f, 1.0f}; // red,green,blue,alpha
     _pImmediateContext->ClearRenderTargetView(_pRenderTargetView, ClearColor);
-
+	_pImmediateContext->ClearDepthStencilView(_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	XMMATRIX world = XMLoadFloat4x4(&_world);
 	XMMATRIX view = XMLoadFloat4x4(&_camManager->GetActiveCamera()->GetView());
 	XMMATRIX projection = XMLoadFloat4x4(&_camManager->GetActiveCamera()->GetProjection());
@@ -511,6 +474,11 @@ void Application::Draw()
 		world *= world2;
 
 		ConstantBuffer cb;
+		//Lighting
+		cb.lightDirection = _lightDirection;
+		cb.diffuseMaterial = _diffuseMaterial;
+		cb.diffuseLight = _diffuseLight;
+		//Matrices
 		cb.mWorld = XMMatrixTranspose(world);
 		cb.mView = XMMatrixTranspose(view);
 		cb.mProjection = XMMatrixTranspose(projection);

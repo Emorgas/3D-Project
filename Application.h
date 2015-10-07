@@ -18,6 +18,9 @@ struct ConstantBuffer
 	XMMATRIX mWorld;
 	XMMATRIX mView;
 	XMMATRIX mProjection;
+	XMFLOAT3 lightDirection;
+	XMFLOAT4 diffuseMaterial;
+	XMFLOAT4 diffuseLight;
 };
 
 class Application
@@ -43,6 +46,14 @@ private:
 	CameraManager*			_camManager;
 	Input*					_input;
 	std::vector<GameObject*> _objects;
+	ID3D11DepthStencilView* _depthStencilView;
+	ID3D11Texture2D*		_depthStencilBuffer;
+	ID3D11RasterizerState*  _wireFrame;
+	ID3D11RasterizerState*  _solid;
+
+	XMFLOAT3				_lightDirection;
+	XMFLOAT4				_diffuseMaterial;
+	XMFLOAT4				_diffuseLight;
 
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
