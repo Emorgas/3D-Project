@@ -383,7 +383,7 @@ void Application::Cleanup()
 
 void Application::Update()
 {
-	_camManager->GetActiveCamera()->CalculateViewProjection();
+	_camManager->GetActiveCamera()->Update();
     // Update our time
     static float t = 0.0f;
 
@@ -413,6 +413,11 @@ void Application::Update()
 
 void Application::HandleInput()
 {
+	//Escape
+	if (_input->IsEscapePressed())
+	{
+		PostQuitMessage(0);
+	}
 	//Zooming Z == Positive Zoom; C == Negative Zoom; X == Reset Zoom;
 	if (_input->IsZPressed())
 	{
@@ -430,19 +435,19 @@ void Application::HandleInput()
 	//Camera Look Movement
 	if (_input->IsWPressed())
 	{
-		_camManager->GetActiveCamera()->AddEye(0.0f, 0.001f, 0.0f);
+		_camManager->GetActiveCamera()->AddMoveForward(0.001f);
 	}
 	if (_input->IsAPressed())
 	{
-		_camManager->GetActiveCamera()->AddEye(-0.001f, 0.0f, 0.0f);
+		_camManager->GetActiveCamera()->AddMoveRight(-0.001f);
 	}
 	if (_input->IsSPressed())
 	{
-		_camManager->GetActiveCamera()->AddEye(0.0f, -0.001f, 0.0f);
+		_camManager->GetActiveCamera()->AddMoveForward(-0.001f);
 	}
 	if (_input->IsDPressed())
 	{
-		_camManager->GetActiveCamera()->AddEye(0.001f, 0.0f, 0.0f);
+		_camManager->GetActiveCamera()->AddMoveRight(0.001f);
 	}
 	if (_input->IsQPressed())
 	{
@@ -451,6 +456,10 @@ void Application::HandleInput()
 	if (_input->IsEPressed())
 	{
 		_pImmediateContext->RSSetState(_solid);
+	}
+	if (_input->HasMouseMoved())
+	{
+		_camManager->GetActiveCamera()->AdjustYawAndPitch((_input->GetMouseMove().x * 0.001f), (_input->GetMouseMove().y * 0.001f));
 	}
 }
 
@@ -463,8 +472,8 @@ void Application::Draw()
     _pImmediateContext->ClearRenderTargetView(_pRenderTargetView, ClearColor);
 	_pImmediateContext->ClearDepthStencilView(_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	XMMATRIX world = XMLoadFloat4x4(&_world);
-	XMMATRIX view = XMLoadFloat4x4(&_camManager->GetActiveCamera()->GetView());
-	XMMATRIX projection = XMLoadFloat4x4(&_camManager->GetActiveCamera()->GetProjection());
+	XMMATRIX view = _camManager->GetActiveCamera()->GetView();
+	XMMATRIX projection = _camManager->GetActiveCamera()->GetProjection();
 
 
 	for (int i = 0; i < _objects.size(); i++)

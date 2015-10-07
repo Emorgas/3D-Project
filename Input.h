@@ -4,8 +4,10 @@
 
 #pragma comment( lib, "dinput8.lib" )
 #include <dinput.h>
-
+#include <directxmath.h>
 #include <string>
+
+using namespace DirectX;
 
 class Input
 {
@@ -16,6 +18,7 @@ private:
 
 	unsigned char m_keyboardState[256];
 	DIMOUSESTATE m_mouseLastState;
+	XMFLOAT2 _mouseMovement;
 
 	bool ReadKeyboard();
 	bool ReadMouse();
@@ -45,6 +48,7 @@ public:
 	bool IsEPressed();
 
 	bool HasMouseMoved();
+	XMFLOAT2 GetMouseMove() { return _mouseMovement; }
 
 	bool Update();
 
