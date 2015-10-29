@@ -102,6 +102,7 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	_objects.at(0)->Initialise(_pd3dDevice);
 	_objects.at(0)->SetTranslation(0.0f, 0.0f, 0.0f);
 
+
 	_light.dir = XMFLOAT3(0.0f, 2.0f, 0.0f);
 	_light.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	_light.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
