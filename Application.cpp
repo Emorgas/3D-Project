@@ -84,17 +84,27 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	_input = new Input();
 	_input->Initialise(_hInst, _hWnd);
 
+	CreateDDSTextureFromFile(_pd3dDevice, L"Crate_COLOR.dds", nullptr, &_cubesTexture);
+
+	D3D11_SAMPLER_DESC sampDesc;
+	ZeroMemory(&sampDesc, sizeof(sampDesc));
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	_pd3dDevice->CreateSamplerState(&sampDesc, &_cubesTexSamplerState);
+
 	_objects.emplace_back(new GameObject());
 	_objects.at(0)->Initialise(_pd3dDevice);
 	_objects.at(0)->SetTranslation(0.0f, 0.0f, 0.0f);
 
-	_objects.emplace_back(new GameObject());
-	_objects.at(1)->Initialise(_pd3dDevice);
-	_objects.at(1)->SetTranslation(-2.0f, -2.0f, 0.1f);
-
-	_lightDirection = XMFLOAT3(0.0f, 1.0f, 0.0f);
-	_diffuseMaterial = XMFLOAT4(0.8f, 0.5f, 0.5f, 1.0f);
-	_diffuseLight = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	_light.dir = XMFLOAT3(0.0f, 2.0f, 0.0f);
+	_light.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	_light.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	return S_OK;
 }
@@ -146,7 +156,8 @@ HRESULT Application::InitShadersAndInputLayout()
     D3D11_INPUT_ELEMENT_DESC layout[] =
     {
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
 	UINT numElements = ARRAYSIZE(layout);
@@ -339,7 +350,16 @@ HRESULT Application::InitDevice()
 	bd.ByteWidth = sizeof(ConstantBuffer);
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = 0;
+	bd.MiscFlags = 0;
     hr = _pd3dDevice->CreateBuffer(&bd, nullptr, &_pConstantBuffer);
+
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(CbPerFrame);
+	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	bd.CPUAccessFlags = 0;
+	bd.MiscFlags = 0;
+	hr = _pd3dDevice->CreateBuffer(&bd, NULL, &_pCbPerFrameBuffer);
 
 	//Create Wireframe State
 	D3D11_RASTERIZER_DESC wfdesc;
@@ -379,6 +399,7 @@ void Application::Cleanup()
 	if (_depthStencilBuffer) _depthStencilBuffer->Release();
 	if (_wireFrame) _wireFrame->Release();
 	if (_solid) _solid->Release();
+	if (_pCbPerFrameBuffer) _pCbPerFrameBuffer->Release();
 }
 
 void Application::Update()
@@ -475,7 +496,8 @@ void Application::Draw()
 	XMMATRIX view = _camManager->GetActiveCamera()->GetView();
 	XMMATRIX projection = _camManager->GetActiveCamera()->GetProjection();
 
-
+	_constBuffPerFrame.light = _light;
+	
 	for (int i = 0; i < _objects.size(); i++)
 	{
 		world = XMLoadFloat4x4(&_objects.at(0)->GetWorld());
@@ -484,18 +506,19 @@ void Application::Draw()
 
 		ConstantBuffer cb;
 		//Lighting
-		cb.lightDirection = _lightDirection;
-		cb.diffuseMaterial = _diffuseMaterial;
-		cb.diffuseLight = _diffuseLight;
 		//Matrices
 		cb.mWorld = XMMatrixTranspose(world);
 		cb.mView = XMMatrixTranspose(view);
 		cb.mProjection = XMMatrixTranspose(projection);
 		_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-
+		_pImmediateContext->UpdateSubresource(_pCbPerFrameBuffer, 0, NULL, &_constBuffPerFrame, 0, 0);
+		
 		_pImmediateContext->VSSetShader(_pVertexShader, nullptr, 0);
 		_pImmediateContext->VSSetConstantBuffers(0, 1, &_pConstantBuffer);
+		_pImmediateContext->PSSetConstantBuffers(0, 1, &_pCbPerFrameBuffer);
 		_pImmediateContext->PSSetShader(_pPixelShader, nullptr, 0);
+		_pImmediateContext->PSSetShaderResources(0, 1, &_cubesTexture);
+		_pImmediateContext->PSSetSamplers(0, 1, &_cubesTexSamplerState);
 		_objects.at(i)->Draw(_pd3dDevice, _pImmediateContext);
 	}
 

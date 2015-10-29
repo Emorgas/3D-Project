@@ -7,44 +7,49 @@
 //--------------------------------------------------------------------------------------
 // Constant Buffer Variables
 //--------------------------------------------------------------------------------------
-cbuffer ConstantBuffer : register( b0 )
+cbuffer ConstantBuffer
 {
 	matrix World;
 	matrix View;
 	matrix Projection;
-	float4 DiffuseMtrl;
-	float4 DiffuseLight;
-	float3 LightVecW;
 }
+
+struct Light
+{
+	float3 dir;
+	float4 ambient;
+	float4 diffuse;
+};
+
+cbuffer CbPerFrame
+{
+	Light light;
+};
+
+Texture2D ObjTexture;
+SamplerState ObjSamplerState;
 
 //--------------------------------------------------------------------------------------
 struct VS_OUTPUT
 {
-    float4 Pos : SV_POSITION;
-    float4 Color : COLOR0;
+	float4 Pos : SV_POSITION;
+	float2 TexCoord : TEXCOORD;
+	float3 normal : NORMAL;
 };
 
 //--------------------------------------------------------------------------------------
 // Vertex Shader
 //--------------------------------------------------------------------------------------
 
-VS_OUTPUT VS(float4 Pos : POSITION, float3 NormalL : NORMAL)
+VS_OUTPUT VS(float4 inPos : POSITION, float2 inTexCoord : TEXCOORD, float3 normal : NORMAL)
 {
 	VS_OUTPUT output = (VS_OUTPUT)0;
 
-	output.Pos = mul(Pos, World);
+	output.Pos = mul(inPos, World);
 	output.Pos = mul(output.Pos, View);
 	output.Pos = mul(output.Pos, Projection);
-
-	// Convert from local space to world space 
-	// W component of vector is 0 as vectors cannot be translated
-	float3 normalW = mul(float4(NormalL, 0.0f), World).xyz;
-		normalW = normalize(normalW);
-
-	// Compute Colour using Diffuse lighting only
-	float diffuseAmount = max(dot(LightVecW, normalW), 0.0f);
-	output.Color.rgb = diffuseAmount * (DiffuseMtrl * DiffuseLight).rgb;
-	output.Color.a = DiffuseMtrl.a;
+	output.normal = mul(normal, World);
+	output.TexCoord = inTexCoord;
 
 	return output;
 }
@@ -53,7 +58,13 @@ VS_OUTPUT VS(float4 Pos : POSITION, float3 NormalL : NORMAL)
 //--------------------------------------------------------------------------------------
 // Pixel Shader
 //--------------------------------------------------------------------------------------
-float4 PS( VS_OUTPUT input ) : SV_Target
+float4 PS(VS_OUTPUT input) : SV_Target
 {
-    return input.Color;
+	input.normal = normalize(input.normal);
+	float4 diffuse = ObjTexture.Sample(ObjSamplerState, input.TexCoord);
+
+	float3 finalColor;
+	finalColor = diffuse * light.ambient;
+	finalColor += saturate(dot(light.dir, input.normal) * light.diffuse * diffuse);
+	return float4(finalColor, diffuse.a);
 }

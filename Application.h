@@ -10,6 +10,7 @@
 #include "Input.h"
 #include "Structures.h"
 #include "GameObject.h"
+#include "DDSTextureLoader.h"
 
 using namespace DirectX;
 
@@ -18,9 +19,11 @@ struct ConstantBuffer
 	XMMATRIX mWorld;
 	XMMATRIX mView;
 	XMMATRIX mProjection;
-	XMFLOAT3 lightDirection;
-	XMFLOAT4 diffuseMaterial;
-	XMFLOAT4 diffuseLight;
+};
+
+struct CbPerFrame
+{
+	Light light;
 };
 
 class Application
@@ -40,6 +43,7 @@ private:
 	ID3D11Buffer*           _pVertexBuffer;
 	ID3D11Buffer*           _pIndexBuffer;
 	ID3D11Buffer*           _pConstantBuffer;
+	ID3D11Buffer*			_pCbPerFrameBuffer;
 	XMFLOAT4X4              _world;
 	XMFLOAT4X4              _view;
 	XMFLOAT4X4              _projection;
@@ -50,10 +54,10 @@ private:
 	ID3D11Texture2D*		_depthStencilBuffer;
 	ID3D11RasterizerState*  _wireFrame;
 	ID3D11RasterizerState*  _solid;
-
-	XMFLOAT3				_lightDirection;
-	XMFLOAT4				_diffuseMaterial;
-	XMFLOAT4				_diffuseLight;
+	ID3D11ShaderResourceView* _cubesTexture;
+	ID3D11SamplerState*      _cubesTexSamplerState;
+	CbPerFrame				 _constBuffPerFrame;
+	Light					 _light;
 
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
@@ -61,8 +65,6 @@ private:
 	void Cleanup();
 	HRESULT CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 	HRESULT InitShadersAndInputLayout();
-	HRESULT InitVertexBuffer();
-	HRESULT InitIndexBuffer();
 	void HandleInput();
 
 	UINT _WindowHeight;

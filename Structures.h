@@ -16,6 +16,21 @@ struct MeshData
 
 struct SimpleVertex
 {
+	SimpleVertex() {}
+	SimpleVertex(float x, float y, float z, float u, float v, float nx, float ny, float nz) : Pos(x, y, z), TexCoord(u, v), normal(nx, ny, nz) {}
 	XMFLOAT3 Pos;
+	XMFLOAT2 TexCoord;
 	XMFLOAT3 normal;
+};
+
+struct Light
+{
+	Light()
+	{
+		ZeroMemory(this, sizeof(Light));
+	}
+	XMFLOAT3 dir;
+	float pad;
+	XMFLOAT4 ambient;
+	XMFLOAT4 diffuse;
 };
