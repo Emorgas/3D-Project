@@ -124,9 +124,11 @@ void Camera::Update()
 
 	_eye += _camRight * _moveLeftRight;
 	_eye += _camForward * _moveBackForward;
+	_eye += _up * _moveUpDown;
 
 	_moveLeftRight = 0.0f;
 	_moveBackForward = 0.0f;
+	_moveUpDown = 0.0f;
 
 	//Take into account eye position
 	_at = _eye + _at;

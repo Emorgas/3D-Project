@@ -30,7 +30,11 @@ struct Light
 		ZeroMemory(this, sizeof(Light));
 	}
 	XMFLOAT3 dir;
-	float pad;
+	float pad1;
+	XMFLOAT3 pos;
+	float range;
+	XMFLOAT3 att;
+	float pad2;
 	XMFLOAT4 ambient;
 	XMFLOAT4 diffuse;
 };

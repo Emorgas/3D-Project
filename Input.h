@@ -47,6 +47,8 @@ public:
 	bool IsQPressed();
 	bool IsEPressed();
 
+
+
 	bool HasMouseMoved();
 	XMFLOAT2 GetMouseMove() { return _mouseMovement; }
 

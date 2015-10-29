@@ -18,6 +18,7 @@ private:
 
 	float _moveLeftRight = 0.0f;
 	float _moveBackForward = 0.0f;
+	float _moveUpDown = 0.0f;
 
 	float _camYaw = 0.0f;
 	float _camPitch = 0.0f;
@@ -58,6 +59,7 @@ public:
 	void AdjustYawAndPitch(float yaw, float pitch) { _camYaw += yaw; _camPitch += pitch; }
 	void AddMoveForward(float move) { _moveBackForward += move; }
 	void AddMoveRight(float move) { _moveLeftRight += move; }
+	void AddMoveUp(float move) { _moveUpDown += move; }
 	void SetEye(XMVECTOR eye) { _eye = eye; }
 	void SetEye(float x, float y, float z);
 	void AddEye(float x, float y, float z);
@@ -72,4 +74,3 @@ public:
 	void Reshape(FLOAT windowWidth, FLOAT windowHeight, FLOAT nearDepth, FLOAT farDepth);
 };
 
- 

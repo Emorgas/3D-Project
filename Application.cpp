@@ -102,9 +102,10 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	_objects.at(0)->Initialise(_pd3dDevice);
 	_objects.at(0)->SetTranslation(0.0f, 0.0f, 0.0f);
 
-
-	_light.dir = XMFLOAT3(0.0f, 2.0f, 0.0f);
-	_light.ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	_light.pos = XMFLOAT3(0.0f, 2.0f, 0.0f);
+	_light.range = 100.0f;
+	_light.att = XMFLOAT3(0.0f, 0.2f, 0.0f);
+	_light.ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
 	_light.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	return S_OK;
@@ -440,18 +441,13 @@ void Application::HandleInput()
 	{
 		PostQuitMessage(0);
 	}
-	//Zooming Z == Positive Zoom; C == Negative Zoom; X == Reset Zoom;
-	if (_input->IsZPressed())
-	{
-		_camManager->GetActiveCamera()->AddZoom(-0.01f);
-	}
 	if (_input->IsCPressed())
 	{
-		_camManager->GetActiveCamera()->AddZoom(0.01f);
+		_pImmediateContext->RSSetState(_wireFrame);
 	}
 	if (_input->IsXPressed())
 	{
-		_camManager->GetActiveCamera()->ResetZoom();
+		_pImmediateContext->RSSetState(_solid);
 	}
 
 	//Camera Look Movement
@@ -473,11 +469,11 @@ void Application::HandleInput()
 	}
 	if (_input->IsQPressed())
 	{
-		_pImmediateContext->RSSetState(_wireFrame);
+		_camManager->GetActiveCamera()->AddMoveUp(0.001f);
 	}
-	if (_input->IsEPressed())
+	if (_input->IsZPressed())
 	{
-		_pImmediateContext->RSSetState(_solid);
+		_camManager->GetActiveCamera()->AddMoveUp(-0.001f);
 	}
 	if (_input->HasMouseMoved())
 	{
