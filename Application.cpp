@@ -81,6 +81,7 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 
 	_camManager->Init();
 
+
 	_input = new Input();
 	_input->Initialise(_hInst, _hWnd);
 

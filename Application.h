@@ -11,6 +11,7 @@
 #include "Structures.h"
 #include "GameObject.h"
 #include "DDSTextureLoader.h"
+#include "MeshManager.h"
 
 using namespace DirectX;
 
@@ -58,6 +59,7 @@ private:
 	ID3D11SamplerState*      _cubesTexSamplerState;
 	CbPerFrame				 _constBuffPerFrame;
 	Light					 _light;
+	MeshManager*			_meshManager;
 
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
