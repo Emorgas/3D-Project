@@ -53,11 +53,31 @@ struct VS_OUTPUT
 	float3 biTangent : BITANGENT;
 };
 
+void CalcTanBiTan(float3 norm, out float3 tan, out float3 biTan)
+{
+
+	float3 c1 = cross(norm, float3(0.0f, 0.0f, 1.0f));
+	float3 c2 = cross(norm, float3(0.0f, 1.0f, 0.0f));
+
+	if (length(c1) > length(c2))
+	{
+		tan = c1;
+	}
+	else
+	{
+		tan = c2;
+	}
+	tan = normalize(tan);
+
+	biTan = cross(norm, tan);
+	biTan = normalize(biTan);
+}
+
 //--------------------------------------------------------------------------------------
 // Vertex Shader
 //--------------------------------------------------------------------------------------
 
-VS_OUTPUT VS(float4 inPos : POSITION, float2 inTexCoord : TEXCOORD, float3 normal : NORMAL, float3 tangent : TANGENT, float3 biTangent : BITANGENT)
+VS_OUTPUT VS(float4 inPos : POSITION, float2 inTexCoord : TEXCOORD, float3 normal : NORMAL)
 {
 	VS_OUTPUT output = (VS_OUTPUT)0;
 
@@ -67,6 +87,10 @@ VS_OUTPUT VS(float4 inPos : POSITION, float2 inTexCoord : TEXCOORD, float3 norma
 	output.Pos = mul(output.Pos, Projection);
 	output.normal = mul(normal, World);
 	output.TexCoord = inTexCoord;
+
+	float3 tangent, biTangent;
+	CalcTanBiTan(normal, tangent, biTangent);
+
 	output.tangent = mul(tangent, (float3x3)World);
 	output.tangent = normalize(output.tangent);
 	output.biTangent = mul(biTangent, (float3x3)World);

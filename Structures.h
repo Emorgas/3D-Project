@@ -17,8 +17,8 @@ struct MeshData
 struct SimpleVertex
 {
 	SimpleVertex() {}
-	SimpleVertex(float x, float y, float z, float u, float v, float nx, float ny, float nz) : Pos(x, y, z), TexCoord(u, v), normal(nx, ny, nz){}
-	SimpleVertex(XMFLOAT3 pos, XMFLOAT2 texC, XMFLOAT3 norm, XMFLOAT3 tan, XMFLOAT3 biTan) : Pos(pos), TexCoord(texC), normal(norm), tangent(tan), biTangent(biTan){}
+	SimpleVertex(float x, float y, float z, float u, float v, float nx, float ny, float nz) : Pos(x, y, z), TexCoord(u, v), normal(nx, ny, nz) {}
+	SimpleVertex(XMFLOAT3 pos, XMFLOAT2 texC, XMFLOAT3 norm) : Pos(pos), TexCoord(texC), normal(norm){}
 	XMFLOAT3 Pos;
 	XMFLOAT2 TexCoord;
 	XMFLOAT3 normal;
@@ -29,18 +29,6 @@ struct SimpleVertex
 	{
 		return memcmp((void*)this, (void*)&other, sizeof(SimpleVertex)) > 0;
 	};
-};
-
-struct TempVertexType
-{
-	float x, y, z;
-	float tu, tv;
-	float nx, ny, nz;
-};
-
-struct VectorType
-{
-	float x, y, z;
 };
 
 struct PointLight

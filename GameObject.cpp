@@ -19,7 +19,6 @@ void GameObject::Initialise(ID3D11Device* device)
 
 	InitVertexBuffer();
 	InitIndexBuffer();
-	CalculateModelVectors();
 }
 
 void GameObject::SetScale(float x, float y, float z)
@@ -177,20 +176,4 @@ HRESULT GameObject::InitIndexBuffer()
 		return hr;
 
 	return S_OK;
-}
-
-void GameObject::CalculateModelVectors()
-{
-	int faceCount, i, index;
-	TempVertexType vertex1, vertex2, vertex3;
-	VectorType tangent, biTangent, normal;
-
-	faceCount = 24 / 3; //THIS IS HARD CODED FIX LATER WHEN MODELS ARE LOADED. YOU WANT TO GET A COUNT OF THE VERTICES IN THE MODEL
-
-	index = 0;
-
-	for (i = 0; i < faceCount; i++)
-	{
-		
-	}
 }
