@@ -24,7 +24,12 @@ struct ConstantBuffer
 
 struct CbPerFrame
 {
-	Light light;
+	PointLight light;
+	XMFLOAT3 eyePosW;
+	float pad;
+	XMFLOAT4 SpecularMaterial;
+	float SpecularPower;
+	XMFLOAT3 pad2;
 };
 
 class Application
@@ -55,11 +60,11 @@ private:
 	ID3D11Texture2D*		_depthStencilBuffer;
 	ID3D11RasterizerState*  _wireFrame;
 	ID3D11RasterizerState*  _solid;
-	ID3D11ShaderResourceView* _cubesTexture;
+	ID3D11ShaderResourceView* _cubesTexture[2];
 	ID3D11SamplerState*      _cubesTexSamplerState;
 	CbPerFrame				 _constBuffPerFrame;
-	Light					 _light;
-	MeshManager*			_meshManager;
+	PointLight				 _light;
+	MeshManager*			 _meshManager;
 
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);

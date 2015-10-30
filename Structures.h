@@ -22,6 +22,8 @@ struct SimpleVertex
 	XMFLOAT3 Pos;
 	XMFLOAT2 TexCoord;
 	XMFLOAT3 normal;
+	XMFLOAT3 tangent;
+	XMFLOAT3 biTangent;
 
 	bool operator<(const SimpleVertex other) const
 	{
@@ -29,18 +31,29 @@ struct SimpleVertex
 	};
 };
 
-struct Light
+struct PointLight
 {
-	Light()
+	PointLight()
 	{
-		ZeroMemory(this, sizeof(Light));
+		ZeroMemory(this, sizeof(PointLight));
 	}
-	XMFLOAT3 dir;
-	float pad1;
-	XMFLOAT3 pos;
-	float range;
-	XMFLOAT3 att;
-	float pad2;
 	XMFLOAT4 ambient;
 	XMFLOAT4 diffuse;
+	XMFLOAT4 specular;
+
+	XMFLOAT3 pos;
+	float range;
+	
+	XMFLOAT3 att;
+	float pad;
+	
 };
+
+//struct Material
+//{
+//	Material(XMFLOAT4 amb, XMFLOAT4 diff, XMFLOAT4 spec, XMFLOAT4 ref) : Ambient(amb), Diffuse(diff), Specular(spec), Reflect(ref) {}
+//	XMFLOAT4 Ambient;
+//	XMFLOAT4 Diffuse;
+//	XMFLOAT4 Specular;
+//	XMFLOAT4 Reflect;
+//};

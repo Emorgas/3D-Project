@@ -17,7 +17,6 @@ private:
 
 	ID3D11Device* _pd3dDevice;
 
-
 	//Temp Solution
 	ID3D11Buffer* _vertexBuffer;
 	ID3D11Buffer* _indexBuffer;
@@ -34,6 +33,7 @@ public:
 	void SetScale(float x, float y, float z);
 	void SetRotation(float x, float y, float z);
 	void SetTranslation(float x, float y, float z);
+	//void SetMaterial(Material mat) { _material = mat; }
 
 	void Initialise(ID3D11Device* device);
 	void Update(float elapsedTime);

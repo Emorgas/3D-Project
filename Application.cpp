@@ -40,6 +40,7 @@ Application::Application()
 	_pVertexBuffer = nullptr;
 	_pIndexBuffer = nullptr;
 	_pConstantBuffer = nullptr;
+	_pCbPerFrameBuffer = nullptr;
 	_camManager = nullptr;
 	_input = nullptr;
 }
@@ -85,7 +86,8 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	_input = new Input();
 	_input->Initialise(_hInst, _hWnd);
 
-	CreateDDSTextureFromFile(_pd3dDevice, L"Crate_COLOR.dds", nullptr, &_cubesTexture);
+	CreateDDSTextureFromFile(_pd3dDevice, L"Crate_COLOR.dds", nullptr, &_cubesTexture[0]);
+	CreateDDSTextureFromFile(_pd3dDevice, L"Crate_NORM.dds", nullptr, &_cubesTexture[1]);
 
 	D3D11_SAMPLER_DESC sampDesc;
 	ZeroMemory(&sampDesc, sizeof(sampDesc));
@@ -99,15 +101,19 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 
 	_pd3dDevice->CreateSamplerState(&sampDesc, &_cubesTexSamplerState);
 
+	//Material tempMat = Material(XMFLOAT4, )
+
 	_objects.emplace_back(new GameObject());
 	_objects.at(0)->Initialise(_pd3dDevice);
 	_objects.at(0)->SetTranslation(0.0f, 0.0f, 0.0f);
+	//_objects.at(0)->SetMaterial(tempMat);
 
-	_light.pos = XMFLOAT3(0.0f, 2.0f, 0.0f);
+	_light.pos = XMFLOAT3(-4.0f, 0.0f, 0.0f);
 	_light.range = 100.0f;
 	_light.att = XMFLOAT3(0.0f, 0.2f, 0.0f);
 	_light.ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
 	_light.diffuse = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	_light.specular = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
 
 	return S_OK;
 }
@@ -161,6 +167,8 @@ HRESULT Application::InitShadersAndInputLayout()
         { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
         { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
 	UINT numElements = ARRAYSIZE(layout);
@@ -494,7 +502,11 @@ void Application::Draw()
 	XMMATRIX view = _camManager->GetActiveCamera()->GetView();
 	XMMATRIX projection = _camManager->GetActiveCamera()->GetProjection();
 
+	XMFLOAT3 tempEyePos;
+	XMStoreFloat3(&tempEyePos, _camManager->GetActiveCamera()->GetEye());
+
 	_constBuffPerFrame.light = _light;
+	_constBuffPerFrame.eyePosW = tempEyePos;
 	
 	for (int i = 0; i < _objects.size(); i++)
 	{
@@ -508,14 +520,16 @@ void Application::Draw()
 		cb.mWorld = XMMatrixTranspose(world);
 		cb.mView = XMMatrixTranspose(view);
 		cb.mProjection = XMMatrixTranspose(projection);
+		_constBuffPerFrame.SpecularMaterial = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+		_constBuffPerFrame.SpecularPower = 100.0f;
 		_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-		_pImmediateContext->UpdateSubresource(_pCbPerFrameBuffer, 0, NULL, &_constBuffPerFrame, 0, 0);
+		_pImmediateContext->UpdateSubresource(_pCbPerFrameBuffer, 0, nullptr, &_constBuffPerFrame, 0, 0);
 		
 		_pImmediateContext->VSSetShader(_pVertexShader, nullptr, 0);
 		_pImmediateContext->VSSetConstantBuffers(0, 1, &_pConstantBuffer);
 		_pImmediateContext->PSSetConstantBuffers(0, 1, &_pCbPerFrameBuffer);
 		_pImmediateContext->PSSetShader(_pPixelShader, nullptr, 0);
-		_pImmediateContext->PSSetShaderResources(0, 1, &_cubesTexture);
+		_pImmediateContext->PSSetShaderResources(0, 2, _cubesTexture);
 		_pImmediateContext->PSSetSamplers(0, 1, &_cubesTexSamplerState);
 		_objects.at(i)->Draw(_pd3dDevice, _pImmediateContext);
 	}

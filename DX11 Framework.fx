@@ -12,21 +12,31 @@ cbuffer ConstantBuffer
 	matrix World;
 	matrix View;
 	matrix Projection;
+
 }
 
-struct Light
+struct PointLight
 {
-	float3 dir;
-	float3 pos;
-	float range;
-	float3 att;
 	float4 ambient;
 	float4 diffuse;
+	float4 specular;
+
+	float3 pos;
+	float range;
+	
+	float3 att;
+	float pad;
+
 };
 
 cbuffer CbPerFrame
 {
-	Light light;
+	PointLight light;
+	float3 eyePosW;
+	float pad;
+	float4 SpecularMaterial;
+	float SpecularPower;
+	float3 pad2;
 };
 
 Texture2D ObjTexture;
@@ -85,13 +95,20 @@ float4 PS(VS_OUTPUT input) : SV_Target
 
 	float howMuchLight = dot(lightToPixelVec, input.normal);
 
+	float3 toEye = normalize(eyePosW - input.worldPos);
+	float3 spec;
+	[flatten]
 	if (howMuchLight > 0.0f)
 	{
+		float3 v = reflect(-lightToPixelVec, input.normal);
+		float specFactor = pow(max(dot(v, toEye), 0.0f), SpecularPower);
+		spec = specFactor * SpecularMaterial * light.specular;
 		finalColor += howMuchLight * diffuse * light.diffuse;
 
 		finalColor /= light.att[0] + (light.att[1] * d) + light.att[2] * (d*d);
 	}
-	finalColor = saturate(finalColor + finalAmbient);
+
+	finalColor = saturate(finalColor + finalAmbient + spec);
 
 	return float4(finalColor, diffuse.a);
 }
