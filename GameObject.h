@@ -21,6 +21,8 @@ private:
 	ID3D11Buffer* _vertexBuffer;
 	ID3D11Buffer* _indexBuffer;
 
+	SimpleVertex* vertices[];
+
 public:
 
 	GameObject();
@@ -33,7 +35,9 @@ public:
 	void SetScale(float x, float y, float z);
 	void SetRotation(float x, float y, float z);
 	void SetTranslation(float x, float y, float z);
-	//void SetMaterial(Material mat) { _material = mat; }
+	void CalculateModelVectors();
+	void CalculateTangentBitangent(TempVertexType, TempVertexType, TempVertexType, VectorType&, VectorType&);
+	void CalculateNormal(VectorType, VectorType, VectorType&);
 
 	void Initialise(ID3D11Device* device);
 	void Update(float elapsedTime);

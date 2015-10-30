@@ -39,7 +39,7 @@ cbuffer CbPerFrame
 	float3 pad2;
 };
 
-Texture2D ObjTexture;
+Texture2D ObjTexture[2];
 SamplerState ObjSamplerState;
 
 //--------------------------------------------------------------------------------------
@@ -49,13 +49,15 @@ struct VS_OUTPUT
 	float4 worldPos : POSITION;
 	float2 TexCoord : TEXCOORD;
 	float3 normal : NORMAL;
+	float3 tangent : TANGENT;
+	float3 biTangent : BITANGENT;
 };
 
 //--------------------------------------------------------------------------------------
 // Vertex Shader
 //--------------------------------------------------------------------------------------
 
-VS_OUTPUT VS(float4 inPos : POSITION, float2 inTexCoord : TEXCOORD, float3 normal : NORMAL)
+VS_OUTPUT VS(float4 inPos : POSITION, float2 inTexCoord : TEXCOORD, float3 normal : NORMAL, float3 tangent : TANGENT, float3 biTangent : BITANGENT)
 {
 	VS_OUTPUT output = (VS_OUTPUT)0;
 
@@ -65,6 +67,10 @@ VS_OUTPUT VS(float4 inPos : POSITION, float2 inTexCoord : TEXCOORD, float3 norma
 	output.Pos = mul(output.Pos, Projection);
 	output.normal = mul(normal, World);
 	output.TexCoord = inTexCoord;
+	output.tangent = mul(tangent, (float3x3)World);
+	output.tangent = normalize(output.tangent);
+	output.biTangent = mul(biTangent, (float3x3)World);
+	output.biTangent = normalize(output.biTangent);
 
 	return output;
 }
@@ -76,7 +82,13 @@ VS_OUTPUT VS(float4 inPos : POSITION, float2 inTexCoord : TEXCOORD, float3 norma
 float4 PS(VS_OUTPUT input) : SV_Target
 {
 	input.normal = normalize(input.normal);
-	float4 diffuse = ObjTexture.Sample(ObjSamplerState, input.TexCoord);
+	float4 diffuse = ObjTexture[0].Sample(ObjSamplerState, input.TexCoord);
+	float4 bumpMap = ObjTexture[1].Sample(ObjSamplerState, input.TexCoord);
+	
+	bumpMap = (bumpMap * 2.0f) - 1.0f;
+
+	float3 bumpNormal = (bumpMap.x * input.tangent) + (bumpMap.y * input.biTangent) + (bumpMap.z * input.normal);
+	bumpNormal = normalize(bumpNormal);
 
 	float3 finalColor = float3(0.0f, 0.0f, 0.0f);
 
@@ -93,14 +105,14 @@ float4 PS(VS_OUTPUT input) : SV_Target
 	//Turn lightToPixelVec into a unit vector describing pixel direction from the light position
 	lightToPixelVec /= d;
 
-	float howMuchLight = dot(lightToPixelVec, input.normal);
+	float howMuchLight = dot(lightToPixelVec, bumpNormal);
 
 	float3 toEye = normalize(eyePosW - input.worldPos);
 	float3 spec;
 	[flatten]
 	if (howMuchLight > 0.0f)
 	{
-		float3 v = reflect(-lightToPixelVec, input.normal);
+		float3 v = reflect(-lightToPixelVec, bumpNormal);
 		float specFactor = pow(max(dot(v, toEye), 0.0f), SpecularPower);
 		spec = specFactor * SpecularMaterial * light.specular;
 		finalColor += howMuchLight * diffuse * light.diffuse;

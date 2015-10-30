@@ -87,7 +87,7 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	_input->Initialise(_hInst, _hWnd);
 
 	CreateDDSTextureFromFile(_pd3dDevice, L"Crate_COLOR.dds", nullptr, &_cubesTexture[0]);
-	CreateDDSTextureFromFile(_pd3dDevice, L"Crate_NORM.dds", nullptr, &_cubesTexture[1]);
+	CreateDDSTextureFromFile(_pd3dDevice, L"Crate_NRM.dds", nullptr, &_cubesTexture[1]);
 
 	D3D11_SAMPLER_DESC sampDesc;
 	ZeroMemory(&sampDesc, sizeof(sampDesc));
@@ -108,7 +108,7 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	_objects.at(0)->SetTranslation(0.0f, 0.0f, 0.0f);
 	//_objects.at(0)->SetMaterial(tempMat);
 
-	_light.pos = XMFLOAT3(-4.0f, 0.0f, 0.0f);
+	_light.pos = XMFLOAT3(-4.0f, 0.0f, 1.0f);
 	_light.range = 100.0f;
 	_light.att = XMFLOAT3(0.0f, 0.2f, 0.0f);
 	_light.ambient = XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
@@ -507,6 +507,8 @@ void Application::Draw()
 
 	_constBuffPerFrame.light = _light;
 	_constBuffPerFrame.eyePosW = tempEyePos;
+	_constBuffPerFrame.SpecularMaterial = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	_constBuffPerFrame.SpecularPower = 10.0f;
 	
 	for (int i = 0; i < _objects.size(); i++)
 	{
@@ -520,8 +522,6 @@ void Application::Draw()
 		cb.mWorld = XMMatrixTranspose(world);
 		cb.mView = XMMatrixTranspose(view);
 		cb.mProjection = XMMatrixTranspose(projection);
-		_constBuffPerFrame.SpecularMaterial = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-		_constBuffPerFrame.SpecularPower = 100.0f;
 		_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 		_pImmediateContext->UpdateSubresource(_pCbPerFrameBuffer, 0, nullptr, &_constBuffPerFrame, 0, 0);
 		
