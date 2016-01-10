@@ -7,6 +7,8 @@
 #include "Structures.h" //For the SimpleVertex structure definition
 #include "GameObject.h" //For the MeshData structure definition
 
+using namespace DirectX;
+
 namespace OBJLoader
 {
 	//The only method you'll need to call
@@ -18,4 +20,6 @@ namespace OBJLoader
 
 	//Re-creates a single index buffer from the 3 given in the OBJ file
 	void CreateIndices(const std::vector<XMFLOAT3>& inVertices, const std::vector<XMFLOAT2>& inTexCoords, const std::vector<XMFLOAT3>& inNormals, std::vector<unsigned short>& outIndices, std::vector<XMFLOAT3>& outVertices, std::vector<XMFLOAT2>& outTexCoords, std::vector<XMFLOAT3>& outNormals);
+
+	void CreateBoundingBox(std::vector<XMFLOAT3> &vertPosArray, std::vector<XMFLOAT3> &AABB);
 };

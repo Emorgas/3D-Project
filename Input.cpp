@@ -233,12 +233,36 @@ bool Input::HasMouseMoved()
 	m_mouse->GetDeviceState(sizeof(DIMOUSESTATE), &m_mouseCurrentState);
 	if (m_mouseCurrentState.lX != m_mouseLastState.lX || m_mouseCurrentState.lY != m_mouseLastState.lY)
 	{
-		//Weird One
-		/*_mouseMovement.x = m_mouseCurrentState.lX * 0.001f;
-		_mouseMovement.y = m_mouseCurrentState.lY * 0.001f;*/
 
 		_mouseMovement.x = -(m_mouseCurrentState.lX - m_mouseLastState.lX);
 		_mouseMovement.y = -(m_mouseCurrentState.lY - m_mouseLastState.lY);
+
+		return true;
+	}
+	return false;
+}
+
+void Input::GetMouseLocation(int& x, int& y)
+{
+	DIMOUSESTATE m_mouseCurrentState;
+	m_mouse->Acquire();
+	m_mouse->GetDeviceState(sizeof(DIMOUSESTATE), &m_mouseCurrentState);
+
+	x = m_mouseCurrentState.lX;
+	y = m_mouseCurrentState.lY;
+	return;
+}
+
+bool Input::IsLMBPressed()
+{
+#define BUTTONDOWN(name, key) (name.rgbButtons[key] & 0x80)
+
+	DIMOUSESTATE m_mouseCurrentState;
+	m_mouse->Acquire();
+	m_mouse->GetDeviceState(sizeof(DIMOUSESTATE), &m_mouseCurrentState);
+
+	if (BUTTONDOWN(m_mouseCurrentState, 0))
+	{
 		return true;
 	}
 	return false;

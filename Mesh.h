@@ -11,7 +11,6 @@ class Mesh
 private:
 	MeshData data;
 	MeshData* dataP;
-
 public:
 	Mesh(ID3D11Device* device, char* modelName);
 	MeshData* getData() { return dataP; } 

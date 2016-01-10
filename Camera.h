@@ -5,6 +5,7 @@
 #include <d3dcompiler.h>
 #include <directxmath.h>
 #include <directxcolors.h>
+#include <vector>	
 
 using namespace DirectX;
 
@@ -40,12 +41,13 @@ private:
 	XMFLOAT4X4 _projection;
 	XMFLOAT4X4 _rotation;
 
+
 public:
 	Camera(XMVECTOR eye, XMVECTOR at, XMVECTOR up, FLOAT windowWidth, FLOAT windowHeight, FLOAT nearDepth, FLOAT farDepth);
 	~Camera();
 
 	void CalculateViewProjection();
-
+	std::vector<XMFLOAT4> CreateViewFrustum();
 	XMMATRIX GetView();
 	XMMATRIX GetProjection();
 

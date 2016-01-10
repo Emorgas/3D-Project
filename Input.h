@@ -51,7 +51,8 @@ public:
 
 	bool HasMouseMoved();
 	XMFLOAT2 GetMouseMove() { return _mouseMovement; }
-
+	void GetMouseLocation(int&, int&);
+	bool Input::IsLMBPressed();
 	bool Update();
 
 };

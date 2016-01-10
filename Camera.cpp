@@ -19,6 +19,73 @@ Camera::~Camera()
 {
 }
 
+std::vector<XMFLOAT4> Camera::CreateViewFrustum()
+{
+	XMFLOAT4X4 tempView, tempProj, tempViewProj;
+	XMMATRIX viewMatrix, projMatrix, viewProjMatrix;
+	tempView = _view;
+	tempProj = _projection;
+
+	float zMinimum = -tempProj._43 / tempProj._33;
+	float r = _farDepth / (_farDepth - zMinimum);
+	tempProj._33 = r;
+	tempProj._43 = -r * zMinimum;
+
+	viewMatrix = XMLoadFloat4x4(&tempView);
+	projMatrix = XMLoadFloat4x4(&tempProj);
+	viewProjMatrix = XMMatrixMultiply(viewMatrix, projMatrix);
+	XMStoreFloat4x4(&tempViewProj, viewProjMatrix);
+	std::vector<XMFLOAT4> tempFrustumPlane(6);
+
+	// Calculate near plane of frustum.
+	tempFrustumPlane[0].x = tempViewProj._14 + tempViewProj._13;
+	tempFrustumPlane[0].y = tempViewProj._24 + tempViewProj._23;
+	tempFrustumPlane[0].z = tempViewProj._34 + tempViewProj._33;
+	tempFrustumPlane[0].w = tempViewProj._44 + tempViewProj._43;
+
+	// Calculate far plane of frustum.
+	tempFrustumPlane[1].x = tempViewProj._14 - tempViewProj._13;
+	tempFrustumPlane[1].y = tempViewProj._24 - tempViewProj._23;
+	tempFrustumPlane[1].z = tempViewProj._34 - tempViewProj._33;
+	tempFrustumPlane[1].w = tempViewProj._44 - tempViewProj._43;
+
+	// Calculate left plane of frustum.
+	tempFrustumPlane[2].x = tempViewProj._14 + tempViewProj._11;
+	tempFrustumPlane[2].y = tempViewProj._24 + tempViewProj._21;
+	tempFrustumPlane[2].z = tempViewProj._34 + tempViewProj._31;
+	tempFrustumPlane[2].w = tempViewProj._44 + tempViewProj._41;
+
+	// Calculate right plane of frustum.
+	tempFrustumPlane[3].x = tempViewProj._14 - tempViewProj._11;
+	tempFrustumPlane[3].y = tempViewProj._24 - tempViewProj._21;
+	tempFrustumPlane[3].z = tempViewProj._34 - tempViewProj._31;
+	tempFrustumPlane[3].w = tempViewProj._44 - tempViewProj._41;
+
+	// Calculate top plane of frustum.
+	tempFrustumPlane[4].x = tempViewProj._14 - tempViewProj._12;
+	tempFrustumPlane[4].y = tempViewProj._24 - tempViewProj._22;
+	tempFrustumPlane[4].z = tempViewProj._34 - tempViewProj._32;
+	tempFrustumPlane[4].w = tempViewProj._44 - tempViewProj._42;
+
+	// Calculate bottom plane of frustum.
+	tempFrustumPlane[5].x = tempViewProj._14 + tempViewProj._12;
+	tempFrustumPlane[5].y = tempViewProj._24 + tempViewProj._22;
+	tempFrustumPlane[5].z = tempViewProj._34 + tempViewProj._32;
+	tempFrustumPlane[5].w = tempViewProj._44 + tempViewProj._42;
+
+
+	//Normalise plane normals
+	for (int i = 0; i < 6; i++)
+	{
+		float length = sqrt((tempFrustumPlane[i].x * tempFrustumPlane[i].x) + (tempFrustumPlane[i].y * tempFrustumPlane[i].y) + (tempFrustumPlane[i].z * tempFrustumPlane[i].z));
+		tempFrustumPlane[i].x /= length;
+		tempFrustumPlane[i].y /= length;
+		tempFrustumPlane[i].z /= length;
+		tempFrustumPlane[i].w /= length;
+	}
+	return tempFrustumPlane;
+}
+
 void Camera::CalculateViewProjection()
 {
 	// Initialize the view matrix
@@ -28,7 +95,7 @@ void Camera::CalculateViewProjection()
 
 	XMStoreFloat4x4(&_view, XMMatrixLookAtLH(Eye, At, Up));
 
-	XMStoreFloat4x4(&_projection, XMMatrixPerspectiveFovLH(_zoom, _windowWidth / _windowHeight, _nearDepth, _farDepth));
+	XMStoreFloat4x4(&_projection, XMMatrixPerspectiveFovLH(_zoom, (_windowWidth / _windowHeight), _nearDepth, _farDepth));
 }
 
 void Camera::Reshape(FLOAT windowWidth, FLOAT windowHeight, FLOAT nearDepth, FLOAT farDepth)

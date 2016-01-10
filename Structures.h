@@ -2,6 +2,8 @@
 
 #include <D3D11.h>
 #include <DirectXMath.h>
+#include <DirectXCollision.h>
+#include <vector>
 
 using namespace DirectX;
 
@@ -12,6 +14,9 @@ struct MeshData
 	UINT VBStride;
 	UINT VBOffset;
 	UINT IndexCount;
+
+	//Bounding Box Data
+	std::vector<XMFLOAT3> AABB;
 };
 
 struct SimpleVertex
@@ -48,12 +53,3 @@ struct PointLight
 	float pad;
 	
 };
-
-//struct Material
-//{
-//	Material(XMFLOAT4 amb, XMFLOAT4 diff, XMFLOAT4 spec, XMFLOAT4 ref) : Ambient(amb), Diffuse(diff), Specular(spec), Reflect(ref) {}
-//	XMFLOAT4 Ambient;
-//	XMFLOAT4 Diffuse;
-//	XMFLOAT4 Specular;
-//	XMFLOAT4 Reflect;
-//};

@@ -1,0 +1,18 @@
+//Scene1.txt
+m cube.obj
+t Crate_COLOR.dds
+tn Crate_NRM.dds
+i -1.0 1.0 2.0
+i 0.0 1.0 5.0
+
+m wb.obj
+t wood_barrel1_c.dds
+tn wood_barrel1_n.dds
+i 0.0 0.0 0.0
+
+m plane.obj
+t metal001.dds
+tn plane_NRM.dds
+i 0.0 0.0 5.0
+
+c 0.0 2.0 -3.0 0.0 0.0 0.0 0.0 0.0

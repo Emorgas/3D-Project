@@ -4,7 +4,7 @@
 bool OBJLoader::FindSimilarVertex(const SimpleVertex& vertex, std::map<SimpleVertex, unsigned short>& vertToIndexMap, unsigned short& index)
 {
 	std::map<SimpleVertex, unsigned short>::iterator it = vertToIndexMap.find(vertex);
-	if(it == vertToIndexMap.end())
+	if (it == vertToIndexMap.end())
 	{
 		return false;
 	}
@@ -21,13 +21,13 @@ void OBJLoader::CreateIndices(const std::vector<XMFLOAT3>& inVertices, const std
 	std::map<SimpleVertex, unsigned short> vertToIndexMap;
 
 	int numVertices = inVertices.size();
-	for(int i = 0; i < numVertices; ++i) //For each vertex
+	for (int i = 0; i < numVertices; ++i) //For each vertex
 	{
-		SimpleVertex vertex = { inVertices[i], inTexCoords[i], inNormals[i]};
+		SimpleVertex vertex = { inVertices[i], inTexCoords[i], inNormals[i] };
 
 		unsigned short index;
 		bool found = FindSimilarVertex(vertex, vertToIndexMap, index); //See if a vertex already exists in the buffer that has the same attributes as this one
-		if(found) //if found, re-use it's index for the index buffer
+		if (found) //if found, re-use it's index for the index buffer
 		{
 			outIndices.push_back(index);
 		}
@@ -54,7 +54,7 @@ MeshData OBJLoader::Load(char* filename, ID3D11Device* _pd3dDevice, bool invertT
 	std::ifstream inFile;
 	inFile.open(filename);
 
-	if(!inFile.good())
+	if (!inFile.good())
 	{
 		return MeshData();
 	}
@@ -74,12 +74,12 @@ MeshData OBJLoader::Load(char* filename, ID3D11Device* _pd3dDevice, bool invertT
 
 		std::string input;
 
-		while(!inFile.eof()) //While we have yet to reach the end of the file...
+		while (!inFile.eof()) //While we have yet to reach the end of the file...
 		{
 			inFile >> input; //Get the next input from the file
 
 			//Check what type of input it was, we are only interested in vertex positions, texture coordinates, normals and indices, nothing else
-			if(input.compare("v") == 0) //Vertex position
+			if (input.compare("v") == 0) //Vertex position
 			{
 				XMFLOAT3 vert;
 
@@ -89,18 +89,18 @@ MeshData OBJLoader::Load(char* filename, ID3D11Device* _pd3dDevice, bool invertT
 
 				verts.push_back(vert);
 			}
-			else if(input.compare("vt") == 0) //Texture coordinate
+			else if (input.compare("vt") == 0) //Texture coordinate
 			{
 				XMFLOAT2 texCoord;
 
 				inFile >> texCoord.x;
 				inFile >> texCoord.y;
 
-				if(invertTexCoords) texCoord.y = 1.0f - texCoord.y;
+				if (invertTexCoords) texCoord.y = 1.0f - texCoord.y;
 
 				texCoords.push_back(texCoord);
 			}
-			else if(input.compare("vn") == 0) //Normal
+			else if (input.compare("vn") == 0) //Normal
 			{
 				XMFLOAT3 normal;
 
@@ -110,13 +110,13 @@ MeshData OBJLoader::Load(char* filename, ID3D11Device* _pd3dDevice, bool invertT
 
 				normals.push_back(normal);
 			}
-			else if(input.compare("f") == 0) //Face
+			else if (input.compare("f") == 0) //Face
 			{
 				unsigned short vInd[3]; //indices for the vertex position
 				unsigned short tInd[3]; //indices for the texture coordinate
 				unsigned short nInd[3]; //indices for the normal
 
-				for(int i = 0; i < 3; ++i)
+				for (int i = 0; i < 3; ++i)
 				{
 					inFile >> input;
 					int slash = input.find("/"); //Find first forward slash
@@ -134,7 +134,7 @@ MeshData OBJLoader::Load(char* filename, ID3D11Device* _pd3dDevice, bool invertT
 				}
 
 				//Place into vectors
-				for(int i = 0; i < 3; ++i)
+				for (int i = 0; i < 3; ++i)
 				{
 					vertIndices.push_back(vInd[i] - 1);		//Minus 1 from each as these as OBJ indexes start from 1 whereas C++ arrays start from 0
 					textureIndices.push_back(tInd[i] - 1);	//which is really annoying. Apart from Lua and SQL, there's not much else that has indexing 
@@ -149,7 +149,7 @@ MeshData OBJLoader::Load(char* filename, ID3D11Device* _pd3dDevice, bool invertT
 		std::vector<XMFLOAT3> expandedNormals;
 		std::vector<XMFLOAT2> expandedTexCoords;
 		unsigned int numIndices = vertIndices.size();
-		for(unsigned int i = 0; i < numIndices; i++)
+		for (unsigned int i = 0; i < numIndices; i++)
 		{
 			expandedVertices.push_back(verts[vertIndices[i]]);
 			expandedTexCoords.push_back(texCoords[textureIndices[i]]);
@@ -165,10 +165,13 @@ MeshData OBJLoader::Load(char* filename, ID3D11Device* _pd3dDevice, bool invertT
 
 		MeshData meshData;
 
+		//Create bounding box uisng vertices
+		CreateBoundingBox(verts, meshData.AABB);
+
 		//Turn data from vector form to arrays
 		SimpleVertex* finalVerts = new SimpleVertex[meshVertices.size()];
 		unsigned int numMeshVertices = meshVertices.size();
-		for(unsigned int i = 0; i < numMeshVertices; ++i)
+		for (unsigned int i = 0; i < numMeshVertices; ++i)
 		{
 			finalVerts[i].Pos = meshVertices[i];
 			finalVerts[i].normal = meshNormals[i];
@@ -198,7 +201,7 @@ MeshData OBJLoader::Load(char* filename, ID3D11Device* _pd3dDevice, bool invertT
 
 		unsigned short* indicesArray = new unsigned short[meshIndices.size()];
 		unsigned int numMeshIndices = meshIndices.size();
-		for(unsigned int i = 0; i < numMeshIndices; ++i)
+		for (unsigned int i = 0; i < numMeshIndices; ++i)
 		{
 			indicesArray[i] = meshIndices[i];
 		}
@@ -207,7 +210,7 @@ MeshData OBJLoader::Load(char* filename, ID3D11Device* _pd3dDevice, bool invertT
 
 		ZeroMemory(&bd, sizeof(bd));
 		bd.Usage = D3D11_USAGE_DEFAULT;
-		bd.ByteWidth = sizeof(WORD) * meshIndices.size();     
+		bd.ByteWidth = sizeof(WORD) * meshIndices.size();
 		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		bd.CPUAccessFlags = 0;
 
@@ -219,9 +222,29 @@ MeshData OBJLoader::Load(char* filename, ID3D11Device* _pd3dDevice, bool invertT
 		meshData.IndexBuffer = indexBuffer;
 
 		//This data has now been sent over to the GPU so we can delete this CPU-side stuff
-		delete [] indicesArray;
-		delete [] finalVerts;
+		delete[] indicesArray;
+		delete[] finalVerts;
 
 		return meshData;
-	}	
+	}
+}
+
+void OBJLoader::CreateBoundingBox(std::vector<XMFLOAT3> &vertPosArray, std::vector<XMFLOAT3> &AABB)
+{
+	XMFLOAT3 minVertex = XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);
+	XMFLOAT3 maxVertex = XMFLOAT3(FLT_MIN, FLT_MIN, FLT_MIN);
+
+	for (int i = 0; i < vertPosArray.size(); i++)
+	{
+		//Find smallest vertex
+		minVertex.x = min(minVertex.x, vertPosArray[i].x);
+		minVertex.y = min(minVertex.y, vertPosArray[i].y);
+		minVertex.z = min(minVertex.z, vertPosArray[i].z);
+		//Find largest vertex
+		maxVertex.x = max(maxVertex.x, vertPosArray[i].x);
+		maxVertex.y = max(maxVertex.y, vertPosArray[i].y);
+		maxVertex.z = max(maxVertex.z, vertPosArray[i].z);
+	}
+	AABB.emplace_back(minVertex);
+	AABB.emplace_back(maxVertex);
 }
