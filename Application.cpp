@@ -589,7 +589,7 @@ void Application::Update()
 	_input->Update();
 	HandleInput();
 	XMFLOAT3 pos = _light1->GetPosition();
-	pos.x -= 0.005f;
+	pos.x -= 0.05f;
 	if (_light1->GetPosition().x < -10.0f)
 	{
 		pos.x = 10.0f;
@@ -597,7 +597,7 @@ void Application::Update()
 	_light1->SetPosition(pos.x, pos.y, pos.z);
 
 	pos = _light2->GetPosition();
-	pos.x += 0.005f;
+	pos.x += 0.05f;
 	if (_light2->GetPosition().x > 10.0f)
 	{
 		pos.x = -10.0f;
@@ -645,27 +645,27 @@ void Application::HandleInput()
 	//Camera Look Movement
 	if (_input->IsWPressed())
 	{
-		_camManager->GetActiveCamera()->AddMoveForward(0.001f);
+		_camManager->GetActiveCamera()->AddMoveForward(0.1f);
 	}
 	if (_input->IsAPressed())
 	{
-		_camManager->GetActiveCamera()->AddMoveRight(-0.001f);
+		_camManager->GetActiveCamera()->AddMoveRight(-0.1f);
 	}
 	if (_input->IsSPressed())
 	{
-		_camManager->GetActiveCamera()->AddMoveForward(-0.001f);
+		_camManager->GetActiveCamera()->AddMoveForward(-0.1f);
 	}
 	if (_input->IsDPressed())
 	{
-		_camManager->GetActiveCamera()->AddMoveRight(0.001f);
+		_camManager->GetActiveCamera()->AddMoveRight(0.1f);
 	}
 	if (_input->IsQPressed())
 	{
-		_camManager->GetActiveCamera()->AddMoveUp(0.001f);
+		_camManager->GetActiveCamera()->AddMoveUp(0.1f);
 	}
 	if (_input->IsZPressed())
 	{
-		_camManager->GetActiveCamera()->AddMoveUp(-0.001f);
+		_camManager->GetActiveCamera()->AddMoveUp(-0.1f);
 	}
 	if (_input->HasMouseMoved())
 	{
