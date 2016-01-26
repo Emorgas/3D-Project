@@ -27,6 +27,8 @@ const int SHADOWMAP_HEIGHT = 2048;
 
 const float SCREEN_NEAR = 1.0f;
 const float SCREEN_FAR = 100.0f;
+const float CameraMoveSpeed = 0.1f;	//CHANGE THIS IF CAMERA MOVES TO FAST
+const float LightMoveSpeed = 0.1f;	//CHANGE THIS IF LIGHTS MOVE TOO FAST
 
 struct ConstantBuffer
 {
@@ -106,7 +108,6 @@ private:
 	ID3D11SamplerState*     _sampleStateClamp;
 	ID3D11SamplerState*		_sampleStateWrap;
 	CbPerFrame				_constBuffPerFrame;
-	PointLight				_light;
 	MeshManager*			_meshManager;
 	ObjectManager*			_objectManager;
 	TextureManager*			_textureManager;

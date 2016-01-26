@@ -1,4 +1,4 @@
-#include "rendertextureclass.h"
+#include "RenderTextureClass.h"
 
 
 RenderTextureClass::RenderTextureClass()

@@ -35,21 +35,3 @@ struct SimpleVertex
 		return memcmp((void*)this, (void*)&other, sizeof(SimpleVertex)) > 0;
 	};
 };
-
-struct PointLight
-{
-	PointLight()
-	{
-		ZeroMemory(this, sizeof(PointLight));
-	}
-	XMFLOAT4 ambient;
-	XMFLOAT4 diffuse;
-	XMFLOAT4 specular;
-
-	XMFLOAT3 pos;
-	float range;
-	
-	XMFLOAT3 att;
-	float pad;
-	
-};

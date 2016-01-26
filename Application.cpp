@@ -589,7 +589,7 @@ void Application::Update()
 	_input->Update();
 	HandleInput();
 	XMFLOAT3 pos = _light1->GetPosition();
-	pos.x -= 0.05f;
+	pos.x -= LightMoveSpeed;
 	if (_light1->GetPosition().x < -10.0f)
 	{
 		pos.x = 10.0f;
@@ -597,7 +597,7 @@ void Application::Update()
 	_light1->SetPosition(pos.x, pos.y, pos.z);
 
 	pos = _light2->GetPosition();
-	pos.x += 0.05f;
+	pos.x += LightMoveSpeed;
 	if (_light2->GetPosition().x > 10.0f)
 	{
 		pos.x = -10.0f;
@@ -633,39 +633,31 @@ void Application::HandleInput()
 	{
 		PostQuitMessage(0);
 	}
-	if (_input->IsCPressed())
-	{
-		_pImmediateContext->RSSetState(_wireFrame);
-	}
-	if (_input->IsXPressed())
-	{
-		_pImmediateContext->RSSetState(_solid);
-	}
 
 	//Camera Look Movement
 	if (_input->IsWPressed())
 	{
-		_camManager->GetActiveCamera()->AddMoveForward(0.1f);
+		_camManager->GetActiveCamera()->AddMoveForward(CameraMoveSpeed);
 	}
 	if (_input->IsAPressed())
 	{
-		_camManager->GetActiveCamera()->AddMoveRight(-0.1f);
+		_camManager->GetActiveCamera()->AddMoveRight(-CameraMoveSpeed);
 	}
 	if (_input->IsSPressed())
 	{
-		_camManager->GetActiveCamera()->AddMoveForward(-0.1f);
+		_camManager->GetActiveCamera()->AddMoveForward(-CameraMoveSpeed);
 	}
 	if (_input->IsDPressed())
 	{
-		_camManager->GetActiveCamera()->AddMoveRight(0.1f);
+		_camManager->GetActiveCamera()->AddMoveRight(CameraMoveSpeed);
 	}
 	if (_input->IsQPressed())
 	{
-		_camManager->GetActiveCamera()->AddMoveUp(0.1f);
+		_camManager->GetActiveCamera()->AddMoveUp(CameraMoveSpeed);
 	}
 	if (_input->IsZPressed())
 	{
-		_camManager->GetActiveCamera()->AddMoveUp(-0.1f);
+		_camManager->GetActiveCamera()->AddMoveUp(-CameraMoveSpeed);
 	}
 	if (_input->HasMouseMoved())
 	{
@@ -702,7 +694,7 @@ void Application::TestIntersection(int mouseX, int mouseY)
 	pointX = ((2.0f * (float)mouseX) / (float)_WindowWidth) - 1.0f;
 	pointY = (((2.0f * (float)mouseY) / (float)_WindowHeight) - 1.0f)*-1.0f;
 
-	//adjust to account for aspect ratio
+	//adjust to account for aspect ratio using the projection matrix
 	XMFLOAT4X4 tempProj;
 	XMStoreFloat4x4(&tempProj, _camManager->GetActiveCamera()->GetProjection());
 	pointX = pointX / tempProj._11;
@@ -713,7 +705,7 @@ void Application::TestIntersection(int mouseX, int mouseY)
 	inverseView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
 	XMFLOAT4X4 inverseViewFloat;
 	XMStoreFloat4x4(&inverseViewFloat, inverseView);
-	//calculate ray dir
+	//calculate ray dir by multiplying position by inverse view matrix
 	dir.x = (pointX * inverseViewFloat._11) + (pointY * inverseViewFloat._21) + inverseViewFloat._31;
 	dir.y = (pointX * inverseViewFloat._12) + (pointY * inverseViewFloat._22) + inverseViewFloat._32;
 	dir.z = (pointX * inverseViewFloat._13) + (pointY * inverseViewFloat._23) + inverseViewFloat._33;
@@ -893,9 +885,8 @@ void Application::RenderSceneDepth2(XMMATRIX& world)
 	{
 		world = XMLoadFloat4x4(&_objectManager->GetObjectByIndex(i)->GetWorld());
 		XMMatrixIdentity() *= world;
-		//OPEN GRAPHICS CLASS WORK FROM HERE
-		_objectManager->GetObjectByIndex(i)->SetBuffers(_pImmediateContext);//Setup the buffers
-																			//Setup everything else
+		_objectManager->GetObjectByIndex(i)->SetBuffers(_pImmediateContext);
+
 		ConstantBuffer cb;
 		cb.mWorld = XMMatrixTranspose(world);
 		cb.mView = XMMatrixTranspose(lightViewMatrix);
@@ -905,8 +896,8 @@ void Application::RenderSceneDepth2(XMMATRIX& world)
 		_pImmediateContext->IASetInputLayout(_pDepthVertexLayout);
 		_pImmediateContext->VSSetShader(_pDepthVertexShader, nullptr, 0);
 		_pImmediateContext->PSSetShader(_pDepthPixelShader, nullptr, 0);
-		//Everything else
-		_objectManager->GetObjectByIndex(i)->Draw(_pImmediateContext);//draw the objects
+
+		_objectManager->GetObjectByIndex(i)->Draw(_pImmediateContext);
 	}
 	_pImmediateContext->OMSetRenderTargets(1, &_pRenderTargetView, _depthStencilView);
 	_pImmediateContext->RSSetViewports(1, &_viewport);

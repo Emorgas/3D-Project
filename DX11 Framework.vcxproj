@@ -374,6 +374,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="ClassDiagram.cd" />
     <None Include="Depth.fx">
       <FileType>Document</FileType>
     </None>
@@ -391,7 +392,7 @@
     <ClCompile Include="MeshManager.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="OBJLoader.cpp" />
-    <ClCompile Include="rendertextureclass.cpp" />
+    <ClCompile Include="RenderTextureClass.cpp" />
     <ClCompile Include="ShaderCompiler.cpp" />
     <ClCompile Include="TextureManager.cpp" />
   </ItemGroup>
@@ -410,7 +411,7 @@
     <ClInclude Include="MeshManager.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="OBJLoader.h" />
-    <ClInclude Include="rendertextureclass.h" />
+    <ClInclude Include="RenderTextureClass.h" />
     <CLInclude Include="resource.h" />
     <ClInclude Include="ShaderCompiler.h" />
     <ClInclude Include="Structures.h" />

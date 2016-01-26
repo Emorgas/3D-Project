@@ -209,7 +209,7 @@ float4 PS(VS_OUTPUT input) : SV_Target
 			float d = length(lightToPixelVec);
 
 			//float4 finalAmbient = diffuse * lightAmbientColor;
-			if (d > lightRange)
+			if (d > lightRange2)
 				return float4(finalColor);
 
 			//Turn lightToPixelVec into a unit vector describing pixel direction from the light position
